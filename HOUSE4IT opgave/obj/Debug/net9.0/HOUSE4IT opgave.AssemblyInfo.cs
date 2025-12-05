@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HOUSE4IT opgave")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ac041255dbf1f7793f5b9e77ab4fe565a4ab0d4e")]
 [assembly: System.Reflection.AssemblyProductAttribute("HOUSE4IT opgave")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HOUSE4IT opgave")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

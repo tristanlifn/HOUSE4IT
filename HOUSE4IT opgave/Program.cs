@@ -1,7 +1,6 @@
-﻿using System.Collections;
-using CsvHelper;
-using System.Globalization;
+﻿using CsvHelper;
 using CsvHelper.Configuration;
+using System.Globalization;
 
 namespace HOUSE4IT_opgave;
 
@@ -15,12 +14,11 @@ internal class Program
         foreach (string file in files)
         {
             List<ItemObject>? originalItems = ReadItems(file);
-            if (originalItems != null)
-            {
-                List<EditedItems> editedItems = EditPrice(originalItems);
-                editedItems = EditItemName(editedItems);
-                editedItemsList.AddRange(editedItems);
-            }
+            if (originalItems == null) continue;
+            
+            List<EditedItems> editedItems = EditPrice(originalItems);
+            editedItems = EditItemName(editedItems);
+            editedItemsList.AddRange(editedItems);
         }
         
         WriteItems(editedItemsList);
@@ -39,17 +37,30 @@ internal class Program
             Delimiter = ";"
         };
 
+        if (!File.Exists(fileName))
+        {
+            Console.WriteLine("ERROR: File not found: " + fileName );
+            return null;
+        }
+        
         List<ItemObject>? originalItems = null;
         try
         {
             using StreamReader reader = new(fileName);
             using CsvReader csv = new(reader, config);
             IEnumerable<ItemObject> records = csv.GetRecords<ItemObject>();
-            originalItems = new(records); // Converts the IEnumerable to a list, to avoid "Possible multiple enumerations of IEnumerable collection" (CA1851)
+            originalItems =
+                new(records); // Converts the IEnumerable to a list, to avoid "Possible multiple enumerations of IEnumerable collection" (CA1851)
         }
-        catch
+        catch (CsvHelperException ex)
         {
-            Console.WriteLine("ERROR: File not found: " + fileName);
+            Console.WriteLine("ERROR: failed to parse CSV file: " + ex.Message);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("ERROR: " + ex.Message);
+            return null;
         }
         return originalItems;
     }
@@ -65,18 +76,23 @@ internal class Program
         foreach (ItemObject item in items)
         {
             decimal newPrice;
-            decimal[] groupPrecent = [30, 50, 40, 40, 50];
+            decimal[] groupPrecent = [1.30m, 1.50m, 1.40m, 1.40m, 1.50m];
             decimal price = decimal.Parse(item.KostprisEUR.Replace(" €", ""));
             try
             {
-                newPrice = price * (groupPrecent[item.PriceGroup - 21] / 100 + 1); // minus the PriceGroup with 21 to get it to align with index 0
+                newPrice = price * groupPrecent[item.PriceGroup - 21]; // minus the PriceGroup with 21 to get it to align with index 0
             }
-            catch
+            catch (IndexOutOfRangeException)
             {
                 Console.WriteLine($"PriceGroup for item {item.Item} is invalid, using default (30%)");
                 newPrice = price * 1.3m;
             }
-            decimal newPriceDkk = newPrice * 746 / 100; // Convert the price to dkk
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR: {ex.Message}\nUsing default (30%)");
+                newPrice = price * 1.3m;
+            }
+            decimal newPriceDkk = newPrice * 746 / 100; // "746" exchange rate to EURO as of 05/12. "100" rate for dkk (see formulas)
             newPriceDkk = Math.Round(newPriceDkk, 2);
             
             item.KostprisEUR = newPriceDkk.ToString("C");
@@ -93,7 +109,7 @@ internal class Program
     }
     
     /// <summary>
-    /// Replaces all instenced of "black" or "Balck" with "sort" or "Sort" 
+    /// Replaces all instenced of "black" or "Black" with "sort" or "Sort" 
     /// </summary>
     /// <param name="items">A list of ItemObjects to modify</param>
     /// <returns>The modified list</returns>
