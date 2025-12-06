@@ -11,3 +11,7 @@ Friday 05/12:
 - End: 16:50
 - Start: 20:30
 - End: 20:40
+
+Saturday 06/12:
+- Start: 13:30
+- End: 13:40

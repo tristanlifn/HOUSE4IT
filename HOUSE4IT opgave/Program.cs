@@ -1,6 +1,7 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace HOUSE4IT_opgave;
 
@@ -34,6 +35,7 @@ internal class Program
         {
             HeaderValidated = null, // makes it not care if a header is not found
             MissingFieldFound = null, // Makes it not care if data for a field is not found
+            PrepareHeaderForMatch = header => Regex.Replace(header.Header, " ", string.Empty), // Remove spaces from headers
             Delimiter = ";"
         };
 
@@ -43,14 +45,13 @@ internal class Program
             return null;
         }
         
-        List<ItemObject>? originalItems = null;
+        List<ItemObject>? originalItems;
         try
         {
             using StreamReader reader = new(fileName);
             using CsvReader csv = new(reader, config);
             IEnumerable<ItemObject> records = csv.GetRecords<ItemObject>();
-            originalItems =
-                new(records); // Converts the IEnumerable to a list, to avoid "Possible multiple enumerations of IEnumerable collection" (CA1851)
+            originalItems = new(records); // Converts the IEnumerable to a list, to avoid "Possible multiple enumerations of IEnumerable collection" (CA1851)
         }
         catch (CsvHelperException ex)
         {
@@ -77,10 +78,10 @@ internal class Program
         {
             decimal newPrice;
             decimal[] groupPrecent = [1.30m, 1.50m, 1.40m, 1.40m, 1.50m];
-            decimal price = decimal.Parse(item.KostprisEUR.Replace(" €", ""));
+            decimal price = decimal.Parse(item.kostprisEUR.Replace(" €", ""));
             try
             {
-                newPrice = price * groupPrecent[item.PriceGroup - 21]; // minus the PriceGroup with 21 to get it to align with index 0
+                newPrice = price * groupPrecent[item.pricegroup - 21]; // minus the PriceGroup with 21 to get it to align with index 0
             }
             catch (IndexOutOfRangeException)
             {
@@ -95,14 +96,14 @@ internal class Program
             decimal newPriceDkk = newPrice * 746 / 100; // "746" exchange rate to EURO as of 05/12. "100" rate for dkk (see formulas)
             newPriceDkk = Math.Round(newPriceDkk, 2);
             
-            item.KostprisEUR = newPriceDkk.ToString("C");
+            item.kostprisEUR = newPriceDkk.ToString("C");
             
             editedItems.Add(new EditedItems
             {
                 Varenummer = item.Item,
-                Navn = item.ArticleDescription,
+                Navn = item.articledescription,
                 KostIDkk = newPriceDkk + " DKK",
-                BeregnetSalgsPrisIDkk = (newPriceDkk * item.PriceUnit) + " DKK",
+                BeregnetSalgsPrisIDkk = (newPriceDkk * item.priceunit) + " DKK",
             });
         }
         return editedItems;

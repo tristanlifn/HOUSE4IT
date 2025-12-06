@@ -1,4 +1,6 @@
-﻿namespace HOUSE4IT_opgave;
+﻿using CsvHelper.Configuration.Attributes;
+
+namespace HOUSE4IT_opgave;
 
 /// <summary>
 /// a class to hold all the data for each item
@@ -6,10 +8,10 @@
 public class ItemObject
 {
     public string Item { get; set; } = string.Empty;
-    public string ArticleDescription { get; set; } = string.Empty;
-    public string Unit { get; set; } = string.Empty;
-    public string KostprisEUR { get; set; } = string.Empty;
-    public int PriceUnit { get; set; }
-    public int PriceGroup {  get; set; }
-    public DateOnly DateOfIssuance { get; set; }
+    public string articledescription { get; set; } = string.Empty;
+    public string unit { get; set; } = string.Empty;
+    public string kostprisEUR { get; set; } = string.Empty;
+    public int priceunit { get; set; }
+    public int pricegroup {  get; set; }
+    public DateOnly dateofissuance { get; set; }
 }
